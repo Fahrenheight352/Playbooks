@@ -1,8 +1,8 @@
 #Prometheus install playbook
 ---
 - name: Install Prometheus
-  hosts: webserver
-  remote_user: ivan
+  hosts: webserver  #To work with this name you should make file inventory.ini where will be the ip address of webservers
+  remote_user: ivan 
   become: true
 
   tasks:
