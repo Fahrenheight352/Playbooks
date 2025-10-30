@@ -1,0 +1,88 @@
+#Prometheus install playbook
+---
+- name: Install Prometheus
+  hosts: webserver
+  remote_user: ivan
+  become: true
+
+  tasks:
+  - name: Download Prometheus
+    ansible.builtin.get_url:
+      url: https://github.com/prometheus/prometheus/releases/download/v3.7.3/prometheus-3.7.3.linux-a>
+      dest: /
+      mode: '0400' 
+  - name: Create directory prometeus
+    ansible.builtin.file:
+      path: /prometeus
+      state: directory
+      mode: '0755'
+  - name: Extract prometeus.tar into /prometeus
+    ansible.builtin.unarchive:
+      src: /prometheus-3.7.3.linux-amd64.tar.gz
+ dest: /prometeus
+      remote_src: yes
+  - name: Copy prometeus file
+    ansible.builtin.copy:
+      src: /prometeus/prometheus-3.7.3.linux-amd64/prometheus
+      dest: /usr/bin/prometheus
+      owner: ivan
+      group: ivan
+      remote_src: yes
+      mode: '0644'
+  - name: Create directory /etc/prometheus
+    ansible.builtin.file:
+      path: /etc/prometheus
+      state: directory
+      mode: '0755'
+  - name: Create directory /etc/prometheus/data
+    ansible.builtin.file:
+      path: /etc/prometheus/data
+      state: directory
+ mode: '0755'
+  - name: Copy prometheus.yml
+    ansible.builtin.copy:
+      src: /prometeus/prometheus-3.7.3.linux-amd64/prometheus.yml
+      dest: /etc/prometheus/prometheus.yml
+      owner: ivan
+      group: ivan
+      remote_src: yes
+      mode: 0644
+  - name: Remove /prometeus
+    ansible.builtin.file:
+      path: /prometeus
+      state: absent
+  - name: Create a prometheus user
+    ansible.builtin.user:
+      name: prometheus
+      system: yes
+      state: present
+      shell: /sbin/nologin
+create_home: no
+  - name: Change owner prometeus
+    ansible.builtin.file:
+      path: /usr/bin/prometheus
+      owner: prometheus
+      group: prometheus
+      mode: '0644'
+  - name: Recursively change owner
+    ansible.builtin.file:
+      path: /etc/prometheus
+      state: directory
+      recurse: yes
+      owner: prometheus
+      group: prometheus
+  - name: Copy prometheus.service
+    copy:
+      src: /prometheus.service
+      dest: /etc/systemd/system/prometheus.service
+  - name: Reload systemd
+ ansible.builtin.systemd_service:
+      daemon_reload: True
+  - name: Start prometheus.service
+    ansible.builtin.systemd_service:
+      state: started
+      name: prometheus
+  - name: Enable prometheus.service
+    ansible.builtin.systemd_service:
+      state: restarted
+      name: prometheus
