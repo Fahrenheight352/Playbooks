@@ -28,7 +28,7 @@
       owner: ivan
       group: ivan
       remote_src: yes
-      mode: '0644'
+      mode: a+x
   - name: Create directory /etc/prometheus
     ansible.builtin.file:
       path: /etc/prometheus
@@ -76,8 +76,12 @@ create_home: no
       src: /prometheus.service
       dest: /etc/systemd/system/prometheus.service
   - name: Reload systemd
- ansible.builtin.systemd_service:
+    ansible.builtin.systemd_service:
       daemon_reload: True
+  - name: Adding +x to file
+    ansible.builtin.file:
+      path: /usr/bin/prometheus
+      mode: a+x
   - name: Start prometheus.service
     ansible.builtin.systemd_service:
       state: started
