@@ -1,0 +1,58 @@
+---
+- name: Install prometheus exporter
+  hosts: prometheus_agent
+  remote_user: ivan
+  become: yes
+
+  tasks:
+  - name: Download prometheus exporter
+    ansible.builtin.get_url:
+      url: https://github.com/prometheus/node_exporter/releases/download/v1.10.2/node_exporter-1.10.2>
+      dest: /
+      mode: '0400'
+  - name: Extract prometheus exporter
+    ansible.builtin.unarchive:
+      src: /node_exporter-1.10.2.linux-amd64.tar.gz
+      dest: /
+      remote_src: yes
+  - name: Copy prometheus exporter file
+    ansible.builtin.copy:
+      src: /node_exporter-1.10.2.linux-amd64/node_exporter
+dest: /usr/bin/
+      owner: ivan
+      group: ivan
+      remote_src: yes
+      mode: a+x
+  - name: Create exporter user
+    ansible.builtin.user:
+      name: node_exporter
+      system: yes
+      state: present
+      shell: /sbin/nologin
+      create_home: no
+  - name: Change owner node_exporter
+    ansible.builtin.file:
+      path: /usr/bin/node_exporter
+      owner: node_exporter
+      group: node_exporter
+      mode: '0644'
+      - name: Copy node_exporter.service
+    copy:
+      src: /node_exporter.service
+      dest: /etc/systemd/system/node_exporter.service
+  - name: Adding +x to file
+    ansible.builtin.file:
+      path: /usr/bin/node_exporter
+      mode: a+x
+  - name: Reload systemd
+    ansible.builtin.systemd_service:
+      daemon_reload: True
+  - name: Start node_exporter
+    ansible.builtin.systemd_service:
+      state: started
+      name: node_exporter
+  - name: Enable node_exporter
+    ansible.builtin.systemd_service:
+      state: restarted
+      name: node_exporter
+  - name: Copy node_exporter.service
