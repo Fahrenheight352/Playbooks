@@ -1,0 +1,36 @@
+---
+- name: Install grafana
+  hosts: grafana
+  remote_user: ivan
+  become: yes
+
+  tasks:
+  - name: Update repository
+    ansible.builtin.apt:
+      name: 
+        - apt-transport-https
+        - software-properties-common
+      update_cache: yes
+  - name: Install apt-transport-https software-properties
+    ansible.builtin.apt:
+      name: 
+        - apt-transport-https
+        - software-properties-common
+     state: present
+  - name: Copy script
+    copy:
+      src: /grafana.sh
+      dest: /
+  - name: Chmod +x grafana.sh
+    ansible.builtin.file:
+      path: /grafana.sh
+      mode: a+x
+  - name: Use script
+    ansible.builtin.script: /grafana.sh
+  - name: Update all pakages
+    ansible.builtin.apt:
+      name: "*"
+      state: latest
+  - name: Copy script2
+    copy:
+      src: /grafana2.sh
