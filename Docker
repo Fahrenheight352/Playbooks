@@ -1,0 +1,45 @@
+# Install docker playbook
+---
+- name: Install Docker
+  hosts: docker
+  remote_user: ivan
+  become: true
+
+  tasks:
+  - name: Update all packages
+    ansible.builtin.apt:
+      name: "*"
+      state: latest
+  - name: Install cacertificates
+    ansible.builtin.apt:
+      name:
+        - ca-certificates
+    - curl
+      update_cache: yes
+  - name: Copy script
+    copy:
+      src: /docker.sh
+      dest: /
+  - name: Chmod +x
+    ansible.builtin.file:
+      path: /docker.sh
+      mode: a+x
+  - name: Use script
+    ansible.builtin.script: /docker.sh
+  - name: Update pakages
+    ansible.builtin.apt:
+      name: "*"
+      state: latest
+  - name: Install docker pakages
+    ansible.builtin.apt:
+      pkg:
+         - docker-ce
+         - docker-ce-cli
+         - containerd.io
+         - docker-buildx-plugin
+         - docker-compose-plugin
+  - name: Start docker.service
+    ansible.builtin.systemd_service:
+      state: started
+      name: docker
+
