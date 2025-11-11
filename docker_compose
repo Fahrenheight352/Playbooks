@@ -1,0 +1,65 @@
+---
+- name: Docker_compose 
+  hosts: docker_compose
+  remote_user: ivan
+  become: true
+ 
+  tasks:
+  - name: Update all packages
+    ansible.builtin.apt:
+      name: "*"
+      state: latest
+  - name: Create directory
+    ansible.builtin.file:
+      path: /home/ivan/project
+      state: directory
+      mode: '0755'
+  - name: Copy compose file nextcloud
+- name: Copy compose file nextcloud
+    copy:
+      src: /project/compose.yml
+      dest: /home/ivan/project/
+  - name: Create directory project1
+    ansible.builtin.file:
+      path: /home/ivan/project1
+      state: directory
+      mode: '0755'
+  - name: Copy compose file wikijs
+    copy:
+      src: /project1/compose.yml
+      dest: /home/ivan/project1/
+  - name: Create directory project2
+    ansible.builtin.file:
+      path: /home/ivan/project2
+      state: directory
+      mode: '0755'
+  - name: Copy compose file adguardhome
+    copy:
+      src: /project2/compose.yml
+      dest: /home/ivan/project2/
+  - name: Create directory project3
+    ansible.builtin.file:
+      path: /home/ivan/project3
+      state: directory
+      mode: '0755'
+  - name: Copy compose file drawio
+    copy:
+      src: /project3/compose.yml
+      dest: /home/ivan/project3/
+  - name: Create and start nextcloud
+    community.docker.docker_compose_v2:
+        project_src: ./project
+    register: output
+  - name: Create and start wikijs
+    community.docker.docker_compose_v2:
+        project_src: ./project1
+    register: output
+  - name: Create and start adguardhome
+    community.docker.docker_compose_v2:
+        project_src: ./project2
+    register: output
+  - name: Create and start drawio
+    community.docker.docker_compose_v2:
+        project_src: ./project3
+    register: output
+
